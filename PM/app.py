@@ -43,5 +43,37 @@ def ingresar():
             return render_template('login.html')
         
 
+@app.route('/ingresarmedico', methods=['POST'])
+def ingresarpaciente():
+    
+    if 'usuario' in session:
+    
+        if request.method=='POST':
+            Vnombre= request.form['nombreP']
+            VapellidoP= request.form['apellidoPP']
+            VapellidoM= request.form['apellidoPM']
+            Vrfc= request.form['fechaNP']
+            Vcorreo= request.form['EnfermedadesP']
+            ValergiasP= request.form['alergiasP']
+            VantecedentesP= request.form['antecedentesP']
+            
+
+            CS= mysql.connection.cursor()
+            CS.execute('insert into Pacientes (Nombres, ApellidoP, ApellidoM, Fecha_nac) values (%s,%s,%s,%s)', (VnombreP, VapellidoPP, VapellidoPM, VfechaNP))        
+            mysql.connection.commit()
+            
+            CS= mysql.connection.cursor()
+            CS.execute('select id from Pacientes where Nombres=%s and ApellidoP=%s and ApellidoM=%s and Fecha_nac=%s',(VnombreP, VapellidoPP, VapellidoPM, VfechaNP))
+            idP = CS.fetchone()
+            
+            CS= mysql.connection.cursor()
+            CS.execute('insert into Expedientes (id_paciente, id_medico, Enfermedades_cronicas, Alergias, Antecedentes_familiares) values(%s,%s,%s,%s,%s)', (idP, idM, VEnfermedadesP, ValergiasP, VantecedentesP))
+            mysql.connection.commit()
+
+
+        flash('Paciente Agregado Correctamente')    
+        return redirect(url_for('RegPas'))
+        
+
 if __name__ == '__main__':
     app.run(port=2000, debug=True)
