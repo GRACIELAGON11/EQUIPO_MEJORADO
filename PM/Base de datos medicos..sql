@@ -1,16 +1,6 @@
-create database Medicos;
+create database medicos;
 
-use Medicos;
-
-create table roles(
-id int not null primary key auto_increment,
-nombre varchar(200)
-);
-
-insert into roles(nombre)
-values
-('General'),
-('Admin');
+use medicos;
 
 create table medicos(
 id int not null primary key auto_increment,
@@ -19,11 +9,15 @@ ap varchar(200),
 am varchar(200),
 rfc varchar(200),
 correo_electronico varchar(200),
-contraseña varchar(200),
-id_rol int not null,
-foreign key (id_rol) references roles (id) 
+rol varchar(100),
+contraseña varchar(100) 
 );
 select * from medicos;
+
+insert into medicos(nombre,ap,am,rfc,correo_electronico,rol,contraseña)
+values
+('Jose Luis','Bernardo','Gutierrez','BEGL1126','joseluis@gmail.com','General','12345');
+
 
 create table expedientes_pacientes(
 id int not null primary key auto_increment,
@@ -71,3 +65,4 @@ id_cita_exploracion int not null,
 foreign key (id_medico) references medicos (id) on delete cascade on update cascade,
 foreign key (id_cita_exploracion) references citas_exploraciones (id) on delete cascade on update cascade
 );
+
