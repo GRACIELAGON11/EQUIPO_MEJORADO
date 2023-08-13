@@ -37,9 +37,10 @@ def ingresar():
             flash('No se encontró el usuario o contraseña')
             return render_template('login.html')
         
-@app.route('/pacientes')
-def pacientes():
-    return render_template('Pacientes.html')
+
+@app.route('/index')
+def index():
+    return render_template('index.html')
         
 #INGRESAR MEDICOS
 @app.route('/guardarmedico', methods=['POST'])
@@ -59,17 +60,13 @@ def guardarmedico():
             mysql.connection.commit()
 
             flash('Medico Agregado Correctamente')    
-            return redirect(url_for('index.html'))
+            return redirect(url_for('index'))
         else:
             return redirect(url_for('login.html'))
         
-@app.route('/index')
-def AgregrarMed():
-    
-    if 'usuario' in session:
-        return render_template('index.html')
-    else:
-        return redirect(url_for('login'))
+@app.route('/pacientes')
+def pacientes():
+    return render_template('Pacientes.html')
 
 if __name__ == '__main__':
     app.run(port=3500, debug=True)
