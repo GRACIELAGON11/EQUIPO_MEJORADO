@@ -1,14 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 #----------------------
-from flask import Flask, render_template, request, redirect, url_for
 from flask_bcrypt import Bcrypt
-#from flask_session import Session
-#from reportlab.lib.pagesizes import letter
-#from reportlab.pdfgen import canvas
-#from reportlab.lib import colors
-#from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-#from reportlab.platypus import SimpleDocTemplate, Paragraph
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['MYSQL_HOST'] = "localhost"
@@ -26,15 +19,7 @@ mysql = MySQL(app)
 def login():
     return render_template('login.html')
 
-@app.route('/medicos')
-def medicos():
-    return render_template('index.html')
-
-@app.route('/pacientes')
-def pacientes():
-    return render_template('Pacientes.html')
-
-
+#LOGIN
 @app.route('/ingresar', methods=['POST'])
 def ingresar():
     if request.method == 'POST':
@@ -50,40 +35,41 @@ def ingresar():
             return render_template('index.html')
         else:
             flash('No se encontró el usuario o contraseña')
-            return render_template('/login.html')
+            return render_template('login.html')
         
+@app.route('/pacientes')
+def pacientes():
+    return render_template('Pacientes.html')
+        
+#INGRESAR MEDICOS
+@app.route('/guardarmedico', methods=['POST'])
+def guardarmedico():    
+        if request.method=='POST':
+            Vrfc= request.form['RFC']
+            Vnombre= request.form['nombre']
+            VapellidoP= request.form['apellidoP']
+            VapellidoM= request.form['apellidoM']
+            Vrol= request.form['rol']
+            Vcedula= request.form['cedulaP']
+            Vcorreo= request.form['correo']
+            Vcontraseña = request.form['contraseña']
 
-@app.route('/ingresarmedico', methods=['POST'])
-def ingresarpaciente():
+            CS= mysql.connection.cursor()
+            CS.execute('insert into medicos (nombre,ap,am,rfc,cedula,correo_electronico,rol,contraseña) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vnombre,VapellidoM,VapellidoP,Vrfc,Vcedula,Vcorreo,Vrol,Vcontraseña))        
+            mysql.connection.commit()
+
+            flash('Medico Agregado Correctamente')    
+            return redirect(url_for('index.html'))
+        else:
+            return redirect(url_for('login.html'))
+        
+@app.route('/index')
+def AgregrarMed():
     
     if 'usuario' in session:
-    
-        if request.method=='POST':
-            Vnombre= request.form['nombreP']
-            VapellidoP= request.form['apellidoPP']
-            VapellidoM= request.form['apellidoPM']
-            Vrfc= request.form['fechaNP']
-            Vcorreo= request.form['EnfermedadesP']
-            ValergiasP= request.form['alergiasP']
-            VantecedentesP= request.form['antecedentesP']
-            
-
-            CS= mysql.connection.cursor()
-            CS.execute('insert into Pacientes (Nombres, ApellidoP, ApellidoM, Fecha_nac) values (%s,%s,%s,%s)', (VnombreP, VapellidoPP, VapellidoPM, VfechaNP))        
-            mysql.connection.commit()
-            
-            CS= mysql.connection.cursor()
-            CS.execute('select id from Pacientes where Nombres=%s and ApellidoP=%s and ApellidoM=%s and Fecha_nac=%s',(VnombreP, VapellidoPP, VapellidoPM, VfechaNP))
-            idP = CS.fetchone()
-            
-            CS= mysql.connection.cursor()
-            CS.execute('insert into Expedientes (id_paciente, id_medico, Enfermedades_cronicas, Alergias, Antecedentes_familiares) values(%s,%s,%s,%s,%s)', (idP, idM, VEnfermedadesP, ValergiasP, VantecedentesP))
-            mysql.connection.commit()
-
-
-        flash('Paciente Agregado Correctamente')    
-        return redirect(url_for('RegPas'))
-        
+        return render_template('index.html')
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(port=2000, debug=True)
+    app.run(port=3500, debug=True)
