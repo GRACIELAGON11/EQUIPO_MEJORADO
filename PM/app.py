@@ -23,6 +23,7 @@ def login():
     return render_template('login.html')
 
 #LOGIN
+
 @app.route('/ingresar', methods=['POST'])
 def ingresar():
     if request.method == 'POST':
@@ -34,12 +35,29 @@ def ingresar():
         id_usuario = Clog.fetchone()
         
         if id_usuario:
-            session['rfc'] = id_usuario  # Establecer variable de sesión
-            return render_template('index.html')
+            session['usuario'] = id_usuario  # Establecer variable de sesión
         else:
-            flash('No se encontró el usuario o contraseña')
+            flash('No se encontró el usuario o contraseña', 'error')
             return render_template('login.html')
         
+        ccargo = mysql.connection.cursor()
+        ccargo.execute('select rol from medicos where rfc = %s and contraseña = %s', (Vrfc, pas))
+        rol_usuario = ccargo.fetchone()
+        
+        if rol_usuario:
+            session['rol'] = rol_usuario # Establecer la variable rol del usuario
+            print(rol_usuario)
+            return render_template('consultar_pacientes.html')
+        else:
+            flash('Hubo un error con el rol')
+            return redirect(url_for('login'))
+
+
+@app.route('/cerrar_sesion')
+def cerrar_sesion():
+    session.clear()  # Borrar la sesión
+    return redirect(url_for('login'))
+
 
 @app.route('/index')
 def index():
@@ -104,8 +122,8 @@ def guardarpaciente():
             Vidpaciente=int(CS.lastrowid)
 
 
-            flash('Medico Agregado Correctamente')    
-            return render_template('diagnostico.html',id=id)
+            flash('Paciente Agregado Correctamente')    
+            return render_template('diagnostico.html',id=Vidpaciente)
         else:
             return redirect(url_for('login.html'))
 
@@ -120,16 +138,17 @@ def guardardiagnostico():
             Vsaturacion= request.form['saturacion']
             Vidpaciente = request.form['id']
             Vfecha = datetime.today()
+            print(Vidpaciente)
             
             CSfecha=mysql.connection.cursor()
-            CSfecha.execute('select TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) AS Edad from expedientes_pacientes where id=%s;',(Vidpaciente))
+            CSfecha.execute('select TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) AS Edad from expedientes_pacientes where id=%s;',(Vidpaciente,))
             Vedad=CSfecha.fetchone()
             CS= mysql.connection.cursor()
             CS.execute('insert into citas_exploraciones(fecha,peso,temperatura,altura,latidos,saturacion,edad,id_expedientes_pacientes) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vfecha,Vpeso,Vtemp,Valtura,Vlatidos,Vsaturacion,Vedad,Vidpaciente))        
             mysql.connection.commit()
             
 
-            flash('Medico Agregado Correctamente')    
+            flash('Paciente agregado Correctamente')    
             return redirect(url_for('diagnostico1'))
         else:
             return redirect(url_for('login.html'))
@@ -174,12 +193,12 @@ def editar(id):
 def actualizar(id):
 
    if request.method == 'POST':
-        Vrfc= request.form['RFC']
+        Vrfc= request.form['rfc']
         Vnombre= request.form['nombre']
         VapellidoP= request.form['apellidoP']
         VapellidoM= request.form['apellidoM']
         Vrol= request.form['rol']
-        Vcedula= request.form['cedulaP']
+        Vcedula= request.form['cedula']
         Vcorreo= request.form['correo']
         Vcontraseña = request.form['contraseña']
 
@@ -187,7 +206,7 @@ def actualizar(id):
         curAct.execute('update medicos set nombre=%s, ap=%s, am=%s, rfc=%s, cedula=%s, correo_electronico=%s, rol=%s, contraseña=%s where id=%s',(Vrfc,Vnombre,VapellidoP,VapellidoM,Vrol,Vcedula, Vcorreo, Vcontraseña ,id))
         mysql.connection.commit()
 
-        flash('Se elimino el doctor')
+        flash('Se actualizo datos del Medico')
         return redirect(url_for('index'))
 
 
@@ -210,7 +229,7 @@ def borrar(id):
     curElim.execute('delete from medicos where id=%s',(id))
     mysql.connection.commit()
   
-  flash('Se elimino el album')
+  flash('Se elimino el Medico')
   return redirect(url_for('index'))
 
 
