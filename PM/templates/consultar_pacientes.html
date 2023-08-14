@@ -2,7 +2,9 @@
 
 
 {% block body%}
+<Form action="/consultamedico" method="POST">
 <body style="background-image: url('static/imagenes/Login.jpg'); background-size: cover; background-repeat: no-repeat;"></body>
+</Form>
 <div class="mt-5 mb-5 py-4">
     <h1 class="display-0 text-center text-black">Expediente Medicos</h1>
 </div>
@@ -14,21 +16,21 @@
             <th>Enfermedades crónicas</th>
             <th>Alergias</th>
             <th>Antecedentes Familiares</th>
-            <th>Editar/Eliminar</th>
         </tr>
     </thead>
-    <tbody>
-        <tr>
-            <td>graciela alvarez gonzalez</td>
-            <td>13/11/01</td>
-            <td>Ninguna</td>
-            <td>Ninguna</td>
-            <td>Ninguna</td>
-            <td></td>
-
-            </td>
-        </tr>
-    </tbody>
+    {%for pac in result%}
+    <tr>
+     <td>{{pac.0}}</td>
+     <td>{{pac.1}} {{pac.2}} {{pac.3}}</td>
+     <td>{{pac.4}}</td>
+     <td>{{pac.5}}</td>
+     <td>{{pac.6}}</td>
+     <td>{{pac.7}}</td>
+     
+    </tr>
+    {%endfor%}
+   </tbody>
 </table>
+</Form>
                 
 {% endblock %}

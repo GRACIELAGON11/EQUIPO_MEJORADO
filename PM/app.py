@@ -36,7 +36,7 @@ def ingresar():
         
         if id_usuario:
             session['usuario'] = id_usuario  # Establecer variable de sesión
-            return render_template('index.html')
+            
         else:
             flash('No se encontró el usuario o contraseña')
             return render_template('login.html')
