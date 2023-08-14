@@ -151,41 +151,43 @@ def guardardiagnostico():
             CS= mysql.connection.cursor()
             CS.execute('insert into citas_exploraciones(fecha,peso,temperatura,altura,latidos,saturacion,edad,id_expedientes_pacientes) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vfecha,Vpeso,Vtemp,Valtura,Vlatidos,Vsaturacion,Vedad,Vidpaciente))        
             mysql.connection.commit()
+            Vidpaciente=int(CS.lastrowid)
             
 
 
             flash('Paciente agregado Correctamente')      
 
-            return redirect(url_for('diagnostico1'))
+            return render_template('diagnostico1.html', Vidpaciente = Vidpaciente)
+        else:
+            return redirect(url_for('login.html'))
+
+
+
+
+
+
+
+@app.route('/guardarDiagnostico', methods=['POST'])
+def guardarDiagnostico():    
+        if request.method=='POST':
+            Vdiagnostico= request.form['diagnostico']
+            Vmedicamentos= request.form['medicamentos']
+            Vindicaciones= request.form['indicaciones']
+            Vsoliestudios= request.form['estudios']
+            Vidpaciente = request.form['id']
+
+
+            CS= mysql.connection.cursor()
+            CS.execute('insert into diagnosticos (diagnostico, medicamento, indicaciones, soli_estudios, id_citas) values (%s,%s,%s,%s,%s)', (Vdiagnostico, Vmedicamentos, Vindicaciones, Vsoliestudios,Vidpaciente))        
+            mysql.connection.commit()
+            Vidpaciente=int(CS.lastrowid)
+
+            flash('El diagnostico fue agregado correctamente')    
+            return render_template('Pacientes.html',Vidpaciente=Vidpaciente)
+
         else:
             return redirect(url_for('login.html'))
         
-
-
-@app.route('/diagnostico1')
-def diagnostico1():
-    return render_template('diagnostico1.html')
-
-@app.route('/guardardiagnostico1', methods=['POST'])
-def guardardiagnostico1():    
-        if request.method=='POST':
-            Vfecha =request.form['fecha']
-            Vpeso= request.form['peso']
-            Vtemp= request.form['temperatura']
-            Valtura= request.form['altura']
-            Vlatidos= request.form['latidos']
-            Vsaturacion= request.form['saturacion']
-            Vedad = request.form['edad']
-            
-            CS= mysql.connection.cursor()
-            CS.execute('insert into citas_exploraciones(fecha,peso,temperatura,altura,latidos,saturacion,edad) values (%s,%s,%s,%s,%s,%s,%s)', (Vfecha,Vpeso,Vtemp,Valtura,Vlatidos,Vsaturacion,Vedad))        
-            mysql.connection.commit()
-            
-
-            flash('Medico Agregado Correctamente')    
-            return redirect(url_for('diagnostico1'))
-        else:
-            return redirect(url_for('login.html'))
 
 
 
