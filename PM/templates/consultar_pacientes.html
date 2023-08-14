@@ -6,30 +6,36 @@
 <body style="background-image: url('static/imagenes/Login.jpg'); background-size: cover; background-repeat: no-repeat;"></body>
 </Form>
 <div class="mt-5 mb-5 py-4">
-    <h1 class="display-0 text-center text-black">Expediente Medicos</h1>
+    <h1 class="display-0 text-center text-black">Pacientes Ingresados</h1>
 </div>
-<input type="number" name="id" value ="{{Vidpaciente}}">
-<table class="table table-lihgt table-hover shadow border-1 mt-5 mb-5">
+<table class="table table-lihgt table-hover shadow border-1 me-3 ms-3">
     <thead>
         <tr class="table-primary">
-            <th>Id</th>
-            <th>Nombre Completo Paciente</th>
-            <th>Fecha de Nacimiento</th>
-            <th>Enfermedades crónicas</th>
-            <th>Alergias</th>
-            <th>Antecedentes Familiares</th>
+            <th>Nombre Paciente</th>
+            <th>Estudios</th>
+            <th>Fecha Consulta</th>
+            <th>Solicitud de Estudios</th>
+            <th>Peso</th>
+            <th>Altura</th>
+            <th>Temperatura</th>
+            <th>Edad</th>
+            <th>Descarga</th>
         </tr>
     </thead>
     {%for pac in result%}
-    <tr>
-     <td>{{pac.0}}</td>
-     <td>{{pac.1}} {{pac.2}} {{pac.3}}</td>
+    <tr class="me-3 ms-5">
+     <td>{{pac.0}} {{pac.1}} {{pac.2}}</td>
+     <td>{{pac.3}}</td>
      <td>{{pac.4}}</td>
      <td>{{pac.5}}</td>
      <td>{{pac.6}}</td>
      <td>{{pac.7}}</td>
      <td>{{pac.8}}</td>
      <td>{{pac.9}}</td>
+     <td>
+        <a href="generareceta/{{pac.0}}"class="btn btn-warning"><i class="bi bi-arrow-down-circle">PDF</i></a>
+     </td>
+     
      
     </tr>
     {%endfor%}

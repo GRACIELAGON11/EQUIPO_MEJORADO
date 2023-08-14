@@ -1,7 +1,15 @@
+#Librerias PDF
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Flowable, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from xhtml2pdf import pisa
+#--------------------
 import datetime
 from datetime import datetime
 from multiprocessing import connection
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template,Response, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import sqlite3
 #----------------------
@@ -194,11 +202,11 @@ def guardarDiagnostico():
 @app.route('/consultar_pacientes')
 def consultar_pacientes():
 
+    Vidmed = int(session['usuario'][0])
     CC= mysql.connection.cursor()
-    CC.execute('select  ep.nombre,ep.ap,ep.am,dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura,ce.latidos,ce.edad from diagnosticos as dia inner join citas_exploraciones as ce on dia.id_citas=ce.id inner join expedientes_pacientes as ep on ce.id_expedientes_pacientes=ep.id where id_medico=1')
-    conPacientes= CC.fetchall()
-    print(conPacientes)
-    return render_template('consultar_pacientes.html', result=conPacientes)
+    CC.execute('select ep.nombre,ep.ap,ep.am,dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura,ce.latidos,ce.edad from diagnosticos as dia inner join citas_exploraciones as ce on dia.id_citas=ce.id inner join expedientes_pacientes as ep on ce.id_expedientes_pacientes=ep.id where id_medico=%s', (Vidmed,))
+    result= CC.fetchall()
+    return render_template('consultar_pacientes.html', result=result)
 
 
 
@@ -232,6 +240,38 @@ def actualizar(id):
         return redirect(url_for('index'))
 
 
+#PDF-------------------------------------------------------------------------------
+@app.route('/generareceta/<id>')
+def generareceta(id):
+    cs = mysql.connection.cursor()
+    cs.execute('select ep.nombre,ep.ap,ep.am,dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura,ce.latidos,ce.edad from diagnosticos as dia inner join citas_exploraciones as ce on dia.id_citas=ce.id inner join expedientes_pacientes as ep on ce.id_expedientes_pacientes=ep.id where ep.nombre=%s',(id))
+    data = cs.fetchall()
+    
+    html_content = render_template('PM/templates/consultar_pacientes.html',results=data)
+
+    response = Response(content_type='application/pdf')
+    response.headers['Content-Disposition'] = 'inline; filename=receta.pdf'
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    story = []
+
+    # Convertir el HTML a PDF utilizando xhtml2pdf
+    result = pisa.CreatePDF(html_content, dest=buffer)
+
+    if not result.err:
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        response.data = pdf_data
+        return response
+    else:
+        buffer.close()
+        return "Error generando el PDF"
+
+
+#Fin PDF
 
 @app.route('/eliminar/<id>')
 def eliminar(id):
