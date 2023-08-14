@@ -193,8 +193,9 @@ def guardarDiagnostico():
 
 @app.route('/consultar_pacientes')
 def consultar_pacientes():
+
     CC= mysql.connection.cursor()
-    CC.execute('select * from expedientes_pacientes')
+    CC.execute('select  ep.nombre,ep.ap,ep.am,dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura,ce.latidos,ce.edad from diagnosticos as dia inner join citas_exploraciones as ce on dia.id_citas=ce.id inner join expedientes_pacientes as ep on ce.id_expedientes_pacientes=ep.id where id_medico=1')
     conPacientes= CC.fetchall()
     print(conPacientes)
     return render_template('consultar_pacientes.html', result=conPacientes)
