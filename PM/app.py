@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from datetime import datetime
+=======
+import datetime
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
 from multiprocessing import connection
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
@@ -23,7 +27,10 @@ def login():
     return render_template('login.html')
 
 #LOGIN
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
 @app.route('/ingresar', methods=['POST'])
 def ingresar():
     if request.method == 'POST':
@@ -37,7 +44,11 @@ def ingresar():
         if id_usuario:
             session['usuario'] = id_usuario  # Establecer variable de sesión
         else:
+<<<<<<< HEAD
             flash('No se encontró el usuario o contraseña', 'error')
+=======
+            flash('No se encontró el usuario o contraseña')
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
             return render_template('login.html')
         
         ccargo = mysql.connection.cursor()
@@ -52,6 +63,7 @@ def ingresar():
             flash('Hubo un error con el rol')
             return redirect(url_for('login'))
 
+<<<<<<< HEAD
 
 @app.route('/cerrar_sesion')
 def cerrar_sesion():
@@ -67,6 +79,11 @@ def index():
     print(conMedicos)
     return render_template('index.html', result=conMedicos)
     
+=======
+@app.route('/index')
+def index():
+    return render_template('index.html')
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
         
 #INGRESAR MEDICOS
 @app.route('/guardarmedico', methods=['POST'])
@@ -122,8 +139,13 @@ def guardarpaciente():
             Vidpaciente=int(CS.lastrowid)
 
 
+<<<<<<< HEAD
             flash('Paciente Agregado Correctamente')    
             return render_template('diagnostico.html',id=Vidpaciente)
+=======
+            flash('Medico Agregado Correctamente')    
+            return render_template('diagnostico.html',id=id)
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
         else:
             return redirect(url_for('login.html'))
 
@@ -138,7 +160,10 @@ def guardardiagnostico():
             Vsaturacion= request.form['saturacion']
             Vidpaciente = request.form['id']
             Vfecha = datetime.today()
+<<<<<<< HEAD
             print(Vidpaciente)
+=======
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
             
             CSfecha=mysql.connection.cursor()
             CSfecha.execute('select TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) AS Edad from expedientes_pacientes where id=%s;',(Vidpaciente,))
@@ -148,7 +173,11 @@ def guardardiagnostico():
             mysql.connection.commit()
             
 
+<<<<<<< HEAD
             flash('Paciente agregado Correctamente')    
+=======
+            flash('Medico Agregado Correctamente')    
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
             return redirect(url_for('diagnostico1'))
         else:
             return redirect(url_for('login.html'))
@@ -180,6 +209,7 @@ def guardardiagnostico1():
 
 
 
+<<<<<<< HEAD
 @app.route('/editar/<id>')
 def editar(id):
   
@@ -235,3 +265,10 @@ def borrar(id):
 
 if __name__ == '__main__':
     app.run(port=3500, debug=True)
+=======
+if __name__ == '__main__':
+    app.run(port=3500, debug=True)
+
+
+
+>>>>>>> 7d586f1b279d29a540b936a4b4504d7ba91df5cd
