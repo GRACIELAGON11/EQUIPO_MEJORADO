@@ -191,6 +191,16 @@ def guardarDiagnostico():
 
 
 
+@app.route('/consultar_pacientes')
+def consultar_pacientes():
+    CC= mysql.connection.cursor()
+    CC.execute('select * from expedientes_pacientes')
+    conPacientes= CC.fetchall()
+    print(conPacientes)
+    return render_template('consultar_pacientes.html', result=conPacientes)
+
+
+
 @app.route('/editar/<id>')
 def editar(id):
   
