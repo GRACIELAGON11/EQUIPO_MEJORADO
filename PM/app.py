@@ -1,14 +1,10 @@
+from datetime import datetime
+from multiprocessing import connection
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
+import sqlite3
 #----------------------
-from flask import Flask, render_template, request, redirect, url_for
 from flask_bcrypt import Bcrypt
-#from flask_session import Session
-#from reportlab.lib.pagesizes import letter
-#from reportlab.pdfgen import canvas
-#from reportlab.lib import colors
-#from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-#from reportlab.platypus import SimpleDocTemplate, Paragraph
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['MYSQL_HOST'] = "localhost"
@@ -26,15 +22,7 @@ mysql = MySQL(app)
 def login():
     return render_template('login.html')
 
-@app.route('/medicos')
-def medicos():
-    return render_template('index.html')
-
-@app.route('/pacientes')
-def pacientes():
-    return render_template('Pacientes.html')
-
-
+#LOGIN
 @app.route('/ingresar', methods=['POST'])
 def ingresar():
     if request.method == 'POST':
@@ -50,40 +38,181 @@ def ingresar():
             return render_template('index.html')
         else:
             flash('No se encontró el usuario o contraseña')
-            return render_template('/login.html')
+            return render_template('login.html')
         
 
-@app.route('/ingresarmedico', methods=['POST'])
-def ingresarpaciente():
+@app.route('/index')
+def index():
+    CC= mysql.connection.cursor()
+    CC.execute('select * from medicos')
+    conMedicos= CC.fetchall()
+    print(conMedicos)
+    return render_template('index.html', result=conMedicos)
     
-    if 'usuario' in session:
-    
+        
+#INGRESAR MEDICOS
+@app.route('/guardarmedico', methods=['POST'])
+def guardarmedico():    
         if request.method=='POST':
-            Vnombre= request.form['nombreP']
-            VapellidoP= request.form['apellidoPP']
-            VapellidoM= request.form['apellidoPM']
-            Vrfc= request.form['fechaNP']
-            Vcorreo= request.form['EnfermedadesP']
-            ValergiasP= request.form['alergiasP']
-            VantecedentesP= request.form['antecedentesP']
-            
+            Vrfc= request.form['RFC']
+            Vnombre= request.form['nombre']
+            VapellidoP= request.form['apellidoP']
+            VapellidoM= request.form['apellidoM']
+            Vrol= request.form['rol']
+            Vcedula= request.form['cedulaP']
+            Vcorreo= request.form['correo']
+            Vcontraseña = request.form['contraseña']
 
             CS= mysql.connection.cursor()
-            CS.execute('insert into Pacientes (Nombres, ApellidoP, ApellidoM, Fecha_nac) values (%s,%s,%s,%s)', (VnombreP, VapellidoPP, VapellidoPM, VfechaNP))        
-            mysql.connection.commit()
-            
-            CS= mysql.connection.cursor()
-            CS.execute('select id from Pacientes where Nombres=%s and ApellidoP=%s and ApellidoM=%s and Fecha_nac=%s',(VnombreP, VapellidoPP, VapellidoPM, VfechaNP))
-            idP = CS.fetchone()
-            
-            CS= mysql.connection.cursor()
-            CS.execute('insert into Expedientes (id_paciente, id_medico, Enfermedades_cronicas, Alergias, Antecedentes_familiares) values(%s,%s,%s,%s,%s)', (idP, idM, VEnfermedadesP, ValergiasP, VantecedentesP))
+            CS.execute('insert into medicos (nombre,ap,am,rfc,cedula,correo_electronico,rol,contraseña) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vnombre,VapellidoM,VapellidoP,Vrfc,Vcedula,Vcorreo,Vrol,Vcontraseña))        
             mysql.connection.commit()
 
-
-        flash('Paciente Agregado Correctamente')    
-        return redirect(url_for('RegPas'))
+            flash('Medico Agregado Correctamente')    
+            return redirect(url_for('index'))
+        else:
+            return redirect(url_for('login.html'))
         
+
+@app.route('/pacientes')
+def pacientes():
+    CS= mysql.connection.cursor()
+    CS.execute('select id, nombre from medicos')
+    opciones=CS.fetchall()
+    return render_template('Pacientes.html',opciones=opciones)
+
+
+@app.route('/diagnostico/<id>')
+def diagnostico(id):
+    return render_template('diagnostico.html',id=id)
+
+@app.route('/guardarpaciente', methods=['POST'])
+def guardarpaciente():    
+        if request.method=='POST':
+            Vnombre= request.form['nombre']
+            VapellidoP= request.form['apellidoP']
+            VapellidoM= request.form['apellidoM']
+            Vnacimiento= request.form['nacimiento']
+            Ven= request.form['enfermedades']
+            Valergias = request.form['alergias']
+            Vante = request.form['antecedentes']
+            Vidmedico = request.form['id']
+
+
+            CS= mysql.connection.cursor()
+            CS.execute('insert into expedientes_pacientes (nombre,ap,am,fecha_nacimiento,enfermedades,alergias,antecedentes,id_medico) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vnombre,VapellidoM,VapellidoP,Vnacimiento,Ven,Valergias,Vante,Vidmedico))        
+            mysql.connection.commit()
+            Vidpaciente=int(CS.lastrowid)
+
+
+            flash('Medico Agregado Correctamente')    
+            return render_template('diagnostico.html',id=id)
+        else:
+            return redirect(url_for('login.html'))
+
+
+@app.route('/guardardiagnostico', methods=['POST'])
+def guardardiagnostico():    
+        if request.method=='POST':
+            Vpeso= request.form['peso']
+            Vtemp= request.form['temperatura']
+            Valtura= request.form['altura']
+            Vlatidos= request.form['latidos']
+            Vsaturacion= request.form['saturacion']
+            Vidpaciente = request.form['id']
+            Vfecha = datetime.today()
+            
+            CSfecha=mysql.connection.cursor()
+            CSfecha.execute('select TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) AS Edad from expedientes_pacientes where id=%s;',(Vidpaciente))
+            Vedad=CSfecha.fetchone()
+            CS= mysql.connection.cursor()
+            CS.execute('insert into citas_exploraciones(fecha,peso,temperatura,altura,latidos,saturacion,edad,id_expedientes_pacientes) values (%s,%s,%s,%s,%s,%s,%s,%s)', (Vfecha,Vpeso,Vtemp,Valtura,Vlatidos,Vsaturacion,Vedad,Vidpaciente))        
+            mysql.connection.commit()
+            
+
+            flash('Medico Agregado Correctamente')    
+            return redirect(url_for('diagnostico1'))
+        else:
+            return redirect(url_for('login.html'))
+
+@app.route('/diagnostico1')
+def diagnostico1():
+    return render_template('diagnostico1.html')
+
+@app.route('/guardardiagnostico1', methods=['POST'])
+def guardardiagnostico1():    
+        if request.method=='POST':
+            Vfecha =request.form['fecha']
+            Vpeso= request.form['peso']
+            Vtemp= request.form['temperatura']
+            Valtura= request.form['altura']
+            Vlatidos= request.form['latidos']
+            Vsaturacion= request.form['saturacion']
+            Vedad = request.form['edad']
+            
+            CS= mysql.connection.cursor()
+            CS.execute('insert into citas_exploraciones(fecha,peso,temperatura,altura,latidos,saturacion,edad) values (%s,%s,%s,%s,%s,%s,%s)', (Vfecha,Vpeso,Vtemp,Valtura,Vlatidos,Vsaturacion,Vedad))        
+            mysql.connection.commit()
+            
+
+            flash('Medico Agregado Correctamente')    
+            return redirect(url_for('diagnostico1'))
+        else:
+            return redirect(url_for('login.html'))
+
+
+
+@app.route('/editar/<id>')
+def editar(id):
+  
+  CID=mysql.connection.cursor();
+  CID.execute('Select * from medicos where id=%s', (id))
+  consultaID= CID.fetchone()
+  return render_template('editarDoc.html',med=consultaID)
+
+
+@app.route('/actualizar/<id>', methods=['POST'])
+def actualizar(id):
+
+   if request.method == 'POST':
+        Vrfc= request.form['RFC']
+        Vnombre= request.form['nombre']
+        VapellidoP= request.form['apellidoP']
+        VapellidoM= request.form['apellidoM']
+        Vrol= request.form['rol']
+        Vcedula= request.form['cedulaP']
+        Vcorreo= request.form['correo']
+        Vcontraseña = request.form['contraseña']
+
+        curAct=mysql.connection.cursor()
+        curAct.execute('update medicos set nombre=%s, ap=%s, am=%s, rfc=%s, cedula=%s, correo_electronico=%s, rol=%s, contraseña=%s where id=%s',(Vrfc,Vnombre,VapellidoP,VapellidoM,Vrol,Vcedula, Vcorreo, Vcontraseña ,id))
+        mysql.connection.commit()
+
+        flash('Se elimino el doctor')
+        return redirect(url_for('index'))
+
+
+
+@app.route('/eliminar/<id>')
+def eliminar(id):
+
+  CID=mysql.connection.cursor();
+  CID.execute('Select * from medicos where id=%s', (id))
+  eliminarID= CID.fetchone()
+  return render_template('eliminarDoc.html',med=eliminarID)
+
+
+@app.route('/borrar/<id>', methods=['POST'])
+def borrar(id):
+
+  if request.method == 'POST':
+    
+    curElim=mysql.connection.cursor()
+    curElim.execute('delete from medicos where id=%s',(id))
+    mysql.connection.commit()
+  
+  flash('Se elimino el album')
+  return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
-    app.run(port=2000, debug=True)
+    app.run(port=3500, debug=True)
