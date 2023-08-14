@@ -92,25 +92,29 @@
 <div class="mt-5 mb-5">
     <h1 class="display-0 text-center text-black">Expediente Medicos</h1>
 </div>
+
 <table class="table table-lihgt table-hover shadow border-1 mt-5 mb-5">
-    <thead>
-        <tr class="table-primary">
-            <th>Nombre Completo</th>
-            <th>RFC</th>
-            <th>Cedula Profesional</th>
-            <th>Rol Medico</th>
-            <th>Correo Electronico</th>
-            <th>Contraseña</th>
-            <th>Editar o Eliminar</th>
-        </tr>
-    </thead>
+  <thead>
+    <tr class="table-primary">
+      <th>Nombre Completo</th>
+      <th>RFC</th>
+      <th>Cedula Profesional</th>
+      <th>Rol Medico</th>
+      <th>Correo Electronico</th>
+      <th>Contraseña</th>
+      <th>Editar o Eliminar</th>
+    </tr>
+  </thead>
     <tbody>
-      {%for med in listMed%}
+      {%for med in result%}
       <tr>
        <td>{{med.0}}</td>
        <td>{{med.1}}</td>
        <td>{{med.2}}</td>
        <td>{{med.3}}</td>
+       <td>{{med.4}}</td>
+       <td>{{med.5}}</td>
+       <td>{{med.6}}</td>
        <td>
           <a href=/editar/{{med.0}} class="btn btn-warning"><i class="bi bi-pencil-square"></i></a>
           <a href=/eliminar/{{med.0}} class="btn btn-danger"><i class="bi bi-trash3"></i></a>
@@ -119,6 +123,7 @@
       {%endfor%}
      </tbody>
 </table>
+
 </form>
                 
 {% endblock %}
