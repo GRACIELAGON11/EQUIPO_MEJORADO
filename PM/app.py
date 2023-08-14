@@ -1,4 +1,5 @@
 import datetime
+from datetime import datetime
 from multiprocessing import connection
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
@@ -124,7 +125,7 @@ def guardarpaciente():
             Vidpaciente=int(CS.lastrowid)
 
             flash('Paciente Agregado Correctamente')    
-            return render_template('diagnostico.html',id=Vidpaciente)
+            return render_template('diagnostico.html',Vidpaciente=Vidpaciente)
 
         else:
             return redirect(url_for('login.html'))
@@ -153,9 +154,7 @@ def guardardiagnostico():
             
 
 
-            flash('Paciente agregado Correctamente')    
-
-            flash('Medico Agregado Correctamente')    
+            flash('Paciente agregado Correctamente')      
 
             return redirect(url_for('diagnostico1'))
         else:
