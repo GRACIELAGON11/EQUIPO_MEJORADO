@@ -9,7 +9,7 @@ from xhtml2pdf import pisa
 import datetime
 from datetime import datetime
 from multiprocessing import connection
-from flask import Flask, render_template,Response, request, redirect, url_for, flash, session
+from flask import Flask, render_template,Response, request, redirect, url_for, flash, session,  render_template_string
 from flask_mysqldb import MySQL
 import sqlite3
 #----------------------
@@ -241,13 +241,68 @@ def actualizar(id):
 
 
 #PDF-------------------------------------------------------------------------------
+from flask import render_template
 @app.route('/generareceta/<id>')
 def generareceta(id):
     cs = mysql.connection.cursor()
-    cs.execute('select ep.nombre,ep.ap,ep.am,dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura,ce.latidos,ce.edad from diagnosticos as dia inner join citas_exploraciones as ce on dia.id_citas=ce.id inner join expedientes_pacientes as ep on ce.id_expedientes_pacientes=ep.id where ep.nombre=%s',(id))
+    cs.execute('SELECT ep.nombre, ep.ap, ep.am, dia.soli_estudios, ce.fecha, ce.peso, ce.altura, ce.temperatura, ce.latidos, ce.edad FROM diagnosticos AS dia INNER JOIN citas_exploraciones AS ce ON dia.id_citas=ce.id INNER JOIN expedientes_pacientes AS ep ON ce.id_expedientes_pacientes=ep.id WHERE ep.nombre=%s', (id,))
     data = cs.fetchall()
-    
-    html_content = render_template('PM/templates/consultar_pacientes.html',results=data)
+
+    # Renderizar la información en un formato adecuado para el PDF
+    html_content = render_template_string('''
+        <style>
+            @page {
+                size: A4; /* Tamaño de la página */
+                margin: 0.5in; /* Margen de la página */
+                border: 4px solid black; /* Borde de la página */
+            }
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-image: url("C:/Users/RULO JR/Documents/GitHub/POO181/EQUIPO_MEJORADO/PM/static/logo1.ICO");
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }
+            h1 {
+                color: blue; /* Color del texto azul */
+                font-size: 32px; /* Tamaño de fuente mayor */
+                font-weight: bold;
+                font-family: 'Baskerville Old Face', cursive; /* Fuente Baskerville Old Face */
+                text-align: center;
+                margin-top: 60px; /* Margen superior */
+                margin-bottom: 40px; /* Margen inferior */
+            }
+            h2 {
+                color: green; /* Color del texto verde */
+                font-size: 24px;
+                font-weight: bold;
+                margin-top: 40px; /* Margen superior */
+                margin-bottom: 20px; /* Margen inferior */
+            }
+            p {
+                font-size: 14px;
+                margin-top: 10px; /* Margen superior */
+                margin-bottom: 10px; /* Margen inferior */
+            }
+        </style>
+        <h1>Receta Médica</h1>
+        <h2>Información del Paciente</h2>
+        <p>Nombre: {{ data[0][0] }} {{ data[0][2] }} {{ data[0][1] }}</p>
+        <p>Fecha de Consulta: {{ data[0][4] }}</p>
+        <p>Peso: {{ data[0][5] }} kg</p>
+        <p>Altura: {{ data[0][6] }} cm</p>
+        <p>Temperatura: {{ data[0][7] }} °C</p>
+        <p>Latidos: {{ data[0][8] }} por minuto</p>
+        <p>Edad: {{ data[0][9] }} años</p>
+        <h2>Diagnóstico</h2>
+        <p> {{ data[0][3] }}</p>
+        ''', data=data)
 
     response = Response(content_type='application/pdf')
     response.headers['Content-Disposition'] = 'inline; filename=receta.pdf'
@@ -270,8 +325,7 @@ def generareceta(id):
         buffer.close()
         return "Error generando el PDF"
 
-
-#Fin PDF
+# Fin del código
 
 @app.route('/eliminar/<id>')
 def eliminar(id):
